@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:lonetodo/app/modules/home/models/todo_model.dart';
+import 'package:lonetodo/app/modules/home/models/item_model.dart';
 import '../controllers/home_controller.dart';
 
 final HomeController _homeController = Get.put(HomeController());
@@ -33,7 +33,7 @@ class HomeView extends GetView<HomeController> {
                         margin: const EdgeInsets.all(10),
                         elevation: 3,
                         child: ListTile(
-                          title: Text(currentItem.todoText),
+                          title: Text(currentItem.nameItem),
                           subtitle: Text("${currentItem.quantity}"),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -41,8 +41,10 @@ class HomeView extends GetView<HomeController> {
                               // Edit button
                               IconButton(
                                   icon: const Icon(Icons.edit),
-                                  onPressed: () =>
-                                      _showForm(context, currentItem.id)),
+                                  onPressed: () {
+                                    var id = currentItem.id;
+                                    _showForm(context, id);
+                                  }),
                               // Delete button
                               IconButton(
                                 icon: const Icon(Icons.delete),
@@ -59,58 +61,20 @@ class HomeView extends GetView<HomeController> {
                     .toList(),
               ),
             ),
-      // : ListView.builder(
-      //     // the list of items
-      //     itemCount: _homeController.items.length,
-      //     itemBuilder: (_, index) {
-      //       final currentItem = _homeController.items[index];
-      //       //return Card(child: Text("${currentItem["name"]}"));
-      //       return Card(
-      //         color: Colors.orange.shade100,
-      //         margin: const EdgeInsets.all(10),
-      //         elevation: 3,
-      //         child: ListTile(
-      //           title: Text(currentItem.todoText),
-      //           subtitle: Text("${currentItem.quantity}"),
-      //           trailing: Row(
-      //             mainAxisSize: MainAxisSize.min,
-      //             children: [
-      //               // Edit button
-      //               IconButton(
-      //                   icon: const Icon(Icons.edit),
-      //                   onPressed: () =>
-      //                       _showForm(context, currentItem.id)),
-      //               // Delete button
-      //               IconButton(
-      //                 icon: const Icon(Icons.delete),
-      //                 onPressed: () {
-      //                   var id = currentItem.id;
-      //                   _homeController.deleteItem(id);
-      //                 },
-      //               ),
-      //             ],
-      //           ),
-      //         ),
-      //       );
-      //     },
-      //   ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showForm(context, null),
+        onPressed: () {
+          _createForm(context);
+        },
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  // This function will be triggered when the floating button is pressed
-  // It will also be triggered when you want to update an item
   void _showForm(BuildContext ctx, int? itemKey) async {
-    // itemKey == null -> create new item
-    // itemKey != null -> update an existing item
-
     if (itemKey != null) {
       final existingItem =
           _homeController.items.firstWhere((item) => item.id == itemKey);
-      _nameController.text = existingItem.todoText;
+      _nameController.text = existingItem.nameItem;
       _quantityController.text = existingItem.quantity.toString();
     }
 
@@ -158,7 +122,7 @@ class HomeView extends GetView<HomeController> {
                         _homeController.updateItem(
                             itemKey,
                             TodoModel(
-                                todoText: _nameController.text.trim(),
+                                nameItem: _nameController.text.trim(),
                                 quantity: _quantityController.text.trim()));
                       }
 
@@ -169,6 +133,53 @@ class HomeView extends GetView<HomeController> {
                       // Navigator.of(context).pop(); // Close the bottom sheet
                     },
                     child: Text(itemKey == null ? 'Create New' : 'Update'),
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  )
+                ],
+              ),
+            ));
+  }
+
+  void _createForm(BuildContext ctx) async {
+    showModalBottomSheet(
+        context: ctx,
+        elevation: 5,
+        isScrollControlled: true,
+        builder: (_) => Container(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                  top: 15,
+                  left: 15,
+                  right: 15),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  TextField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(hintText: 'Name'),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextField(
+                    controller: _quantityController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(hintText: 'Quantity'),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      _homeController.createItem({
+                        "name": _nameController.text,
+                        "quantity": _quantityController.text
+                      });
+                    },
+                    child: const Text("Create"),
                   ),
                   const SizedBox(
                     height: 15,
