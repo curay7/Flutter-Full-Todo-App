@@ -5,7 +5,7 @@ import '../controllers/home_controller.dart';
 
 final HomeController _homeController = Get.put(HomeController());
 final TextEditingController _nameController = TextEditingController();
-final TextEditingController _quantityController = TextEditingController();
+var statusController = false.obs;
 
 class HomeView extends GetView<HomeController> {
   HomeView({Key? key}) : super(key: key);
@@ -34,7 +34,7 @@ class HomeView extends GetView<HomeController> {
                         elevation: 3,
                         child: ListTile(
                           title: Text(currentItem.nameItem),
-                          subtitle: Text("${currentItem.quantity}"),
+                          subtitle: Text("${currentItem.status}"),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -43,7 +43,8 @@ class HomeView extends GetView<HomeController> {
                                   icon: const Icon(Icons.edit),
                                   onPressed: () {
                                     var id = currentItem.id;
-                                    _showForm(context, id);
+                                    _editForm(context, id, currentItem.nameItem,
+                                        currentItem.status);
                                   }),
                               // Delete button
                               IconButton(
@@ -70,122 +71,104 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  void _showForm(BuildContext ctx, int? itemKey) async {
-    if (itemKey != null) {
-      final existingItem =
-          _homeController.items.firstWhere((item) => item.id == itemKey);
-      _nameController.text = existingItem.nameItem;
-      _quantityController.text = existingItem.quantity.toString();
-    }
-
+  void _editForm(BuildContext ctx, var id, String currentItemName,
+      bool currentItemStatus) {
+    _nameController.text = currentItemName;
+    statusController.value = currentItemStatus;
     showModalBottomSheet(
-        context: ctx,
-        elevation: 5,
-        isScrollControlled: true,
-        builder: (_) => Container(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(ctx).viewInsets.bottom,
-                  top: 15,
-                  left: 15,
-                  right: 15),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(hintText: 'Name'),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  TextField(
-                    controller: _quantityController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(hintText: 'Quantity'),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      // Save new item
-                      if (itemKey == null) {
-                        _homeController.createItem({
-                          "name": _nameController.text,
-                          "quantity": _quantityController.text
-                        });
-                      }
-
-                      // update an existing item
-                      if (itemKey != null) {
-                        _homeController.updateItem(
-                            itemKey,
-                            TodoModel(
-                                nameItem: _nameController.text.trim(),
-                                quantity: _quantityController.text.trim()));
-                      }
-
-                      // Clear the text fields
-                      _nameController.text = '';
-                      _quantityController.text = '';
-
-                      // Navigator.of(context).pop(); // Close the bottom sheet
-                    },
-                    child: Text(itemKey == null ? 'Create New' : 'Update'),
-                  ),
-                  const SizedBox(
-                    height: 15,
-                  )
-                ],
-              ),
-            ));
+      context: ctx,
+      elevation: 5,
+      isScrollControlled: true,
+      builder: (_) => Container(
+        padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            top: 15,
+            left: 15,
+            right: 15),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(hintText: 'Name'),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Obx(
+              () {
+                return Checkbox(
+                  value: statusController.value,
+                  onChanged: (value) {
+                    bool onChangeBool =
+                        (value.toString() == 'true') ? true : false;
+                    statusController.value = onChangeBool;
+                  },
+                );
+              },
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _homeController.updateItem(
+                    id,
+                    TodoModel(
+                        nameItem: _nameController.text,
+                        status: statusController.value));
+                _nameController.text = '';
+              },
+              child: const Text('update'),
+            ),
+            const SizedBox(
+              height: 15,
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   void _createForm(BuildContext ctx) async {
     showModalBottomSheet(
-        context: ctx,
-        elevation: 5,
-        isScrollControlled: true,
-        builder: (_) => Container(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(ctx).viewInsets.bottom,
-                  top: 15,
-                  left: 15,
-                  right: 15),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(hintText: 'Name'),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  TextField(
-                    controller: _quantityController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(hintText: 'Quantity'),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      _homeController.createItem({
-                        "name": _nameController.text,
-                        "quantity": _quantityController.text
-                      });
-                    },
-                    child: const Text("Create"),
-                  ),
-                  const SizedBox(
-                    height: 15,
-                  )
-                ],
-              ),
-            ));
+      context: ctx,
+      elevation: 5,
+      isScrollControlled: true,
+      builder: (_) => Container(
+        padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            top: 15,
+            left: 15,
+            right: 15),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(hintText: 'Name'),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                _homeController.createItem(
+                    {"name": _nameController.text, "quantity": false});
+              },
+              child: const Text("Create"),
+            ),
+            const SizedBox(
+              height: 15,
+            )
+          ],
+        ),
+      ),
+    );
   }
 }

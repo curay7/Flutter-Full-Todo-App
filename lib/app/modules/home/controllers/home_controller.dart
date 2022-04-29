@@ -29,7 +29,12 @@ class HomeController extends GetxController {
 
   //!!!!!This is for LocalDatabase
 
-  //? Get all items from the database
+  // ignore: slash_for_doc_comments
+  /**
+   * ? Get all items from the database
+   * 
+   * 
+   */
   refreshItems() async {
     print("fire RefreshItems");
     var data = _shoppingBox.keys.map((key) {
@@ -37,20 +42,20 @@ class HomeController extends GetxController {
       return {"key": key, "name": value["name"], "quantity": value['quantity']};
     }).toList();
     for (var item in data) {
-      //! Todo:Quantity is null need to fix the data from hive database
-      String tempVarQuantity = "";
-      (item["quantity"] == null)
-          ? tempVarQuantity = "0"
-          : tempVarQuantity = item["quantity"];
-
       TodoModel initailData = TodoModel(
-          nameItem: item["name"], quantity: tempVarQuantity, id: item["key"]);
+          nameItem: item["name"], status: item["quantity"], id: item["key"]);
       items.add(initailData);
     }
   }
 
-  //? Create new item
-  Future<void> createItem(newItem) async {
+  // ignore: slash_for_doc_comments
+  /**
+   *  ?Create new item
+   * 
+   * 
+   */
+
+  void createItem(newItem) async {
     var addToHive = {
       "name": newItem["name"],
       "quantity": newItem["quantity"],
@@ -58,30 +63,47 @@ class HomeController extends GetxController {
     };
     var newId = await _shoppingBox.add(addToHive);
 
-    TodoModel addedItem = await TodoModel(
-        id: newId, nameItem: newItem["name"], quantity: newItem["quantity"]);
+    TodoModel addedItem = TodoModel(
+        id: newId, nameItem: newItem["name"], status: newItem["quantity"]);
 
     items.add(addedItem);
     print(newId);
   }
 
-  //? Retrieve a single item from the database by using its key
+  // ignore: slash_for_doc_comments
+  /**
+   * ? Retrieve a single item from the database by using its key
+   * 
+   * 
+   */
   void readItem(int key) {
     final item = _shoppingBox.get(key);
     return item;
   }
 
-  //? Update a single item
+  // ignore: slash_for_doc_comments
+  /**
+   *  ?Update a single item
+   * 
+   * 
+   */
   updateItem(int itemKey, TodoModel updateItem) async {
     items[items.indexWhere((todo) => todo.id == itemKey)] = updateItem;
     var putToHiveUpdate = {
       'name': updateItem.nameItem,
-      'quantity': updateItem.quantity
+      'quantity': updateItem.status
     };
     await _shoppingBox.put(itemKey, putToHiveUpdate);
   }
 
-  //? Delete a single item
+  // ignore: slash_for_doc_comments
+  /***
+   *   ?Delete a single item
+   * 
+   * 
+   * 
+   * 
+   */
   deleteItem(itemKey) async {
     await _shoppingBox.delete(itemKey);
     items.removeWhere((item) => item.id == itemKey);
@@ -99,8 +121,5 @@ class HomeController extends GetxController {
       isDismissible: true,
       forwardAnimationCurve: Curves.easeOutBack,
     );
-    // Display a snackbar
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text('An item has been deleted')));
   }
 }
