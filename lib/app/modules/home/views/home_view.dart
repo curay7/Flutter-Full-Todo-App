@@ -4,76 +4,96 @@ import 'package:lonetodo/app/modules/home/models/item_model.dart';
 import '../controllers/home_controller.dart';
 
 final HomeController _homeController = Get.put(HomeController());
-final TextEditingController _nameController = TextEditingController();
+final TextEditingController _nameCreateController = TextEditingController();
+final TextEditingController _nameUpdateController = TextEditingController();
 var statusController = false.obs;
 
 class HomeView extends GetView<HomeController> {
-  HomeView({Key? key}) : super(key: key);
+  const HomeView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('HomeView'),
-        centerTitle: true,
-      ),
-      body: _homeController.items.isEmpty
-          ? const Center(
-              child: Text(
-                'No Data',
-                style: TextStyle(fontSize: 30),
-              ),
-            )
-          : Obx(
-              () => ListView(
-                children: _homeController.items.reversed
-                    .map(
-                      (currentItem) => Card(
-                        color: Colors.orange.shade100,
-                        margin: const EdgeInsets.all(10),
-                        elevation: 3,
-                        child: ListTile(
-                          title: Text(currentItem.nameItem),
-                          subtitle: Text("${currentItem.status}"),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Edit button
-                              IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () {
-                                    var id = currentItem.id;
-                                    _editForm(context, id, currentItem.nameItem,
-                                        currentItem.status);
-                                  }),
-                              // Delete button
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  var id = currentItem.id;
-                                  _homeController.deleteItem(id);
-                                },
-                              ),
-                            ],
-                          ),
+    final Size size = MediaQuery.of(context).size;
+    double twoContainerHeight = size.height * 0.50;
+    return SafeArea(
+      child: Scaffold(
+        body: _homeController.items.isEmpty
+            ? const Center(
+                child: Text(
+                  'No Data',
+                  style: TextStyle(fontSize: 30),
+                ),
+              )
+            : Column(
+                children: [
+                  Obx(
+                    () => AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: closeTopContainer.value ? 0 : 1,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: size.width,
+                        alignment: Alignment.topCenter,
+                        height:
+                            closeTopContainer.value ? 0 : twoContainerHeight,
+                        child: ListView(
+                          children: _homeController.items.reversed
+                              .map(
+                                (currentItem) => Card(
+                                  color: Colors.transparent,
+                                  margin: const EdgeInsets.all(10),
+                                  elevation: 0,
+                                  child: ListTile(
+                                    title: Text(currentItem.nameItem),
+                                    subtitle: Text("${currentItem.status}"),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // Edit button
+                                        IconButton(
+                                            icon: const Icon(Icons.edit),
+                                            onPressed: () {
+                                              var id = currentItem.id;
+                                              _editForm(
+                                                  context,
+                                                  id,
+                                                  currentItem.nameItem,
+                                                  currentItem.status);
+                                            }),
+                                        // Delete button
+                                        IconButton(
+                                          icon: const Icon(Icons.delete),
+                                          onPressed: () {
+                                            var id = currentItem.id;
+                                            _homeController.deleteItem(id);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
-                    )
-                    .toList(),
+                    ),
+                  ),
+                  customCard(context)
+                ],
               ),
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _createForm(context);
-        },
-        child: const Icon(Icons.add),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _createForm(context);
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
 
   void _editForm(BuildContext ctx, var id, String currentItemName,
       bool currentItemStatus) {
-    _nameController.text = currentItemName;
+    _nameUpdateController.text = currentItemName;
     statusController.value = currentItemStatus;
     showModalBottomSheet(
       context: ctx,
@@ -90,7 +110,7 @@ class HomeView extends GetView<HomeController> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             TextField(
-              controller: _nameController,
+              controller: _nameUpdateController,
               decoration: const InputDecoration(hintText: 'Name'),
             ),
             const SizedBox(
@@ -101,6 +121,7 @@ class HomeView extends GetView<HomeController> {
                 return Checkbox(
                   value: statusController.value,
                   onChanged: (value) {
+                    print(id);
                     bool onChangeBool =
                         (value.toString() == 'true') ? true : false;
                     statusController.value = onChangeBool;
@@ -116,9 +137,10 @@ class HomeView extends GetView<HomeController> {
                 _homeController.updateItem(
                     id,
                     TodoModel(
-                        nameItem: _nameController.text,
+                        id: id,
+                        nameItem: _nameUpdateController.text,
                         status: statusController.value));
-                _nameController.text = '';
+                _nameUpdateController.text = '';
               },
               child: const Text('update'),
             ),
@@ -147,7 +169,7 @@ class HomeView extends GetView<HomeController> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             TextField(
-              controller: _nameController,
+              controller: _nameCreateController,
               decoration: const InputDecoration(hintText: 'Name'),
             ),
             const SizedBox(
@@ -159,7 +181,9 @@ class HomeView extends GetView<HomeController> {
             ElevatedButton(
               onPressed: () async {
                 _homeController.createItem(
-                    {"name": _nameController.text, "quantity": false});
+                    {"name": _nameCreateController.text, "status": false});
+                _nameCreateController.text = "";
+                Navigator.pop(ctx);
               },
               child: const Text("Create"),
             ),
@@ -168,6 +192,55 @@ class HomeView extends GetView<HomeController> {
             )
           ],
         ),
+      ),
+    );
+  }
+
+  customCard(context) {
+    return Expanded(
+      child: Obx(
+        () => ListView(
+          controller: twoScrollController,
+          children: _homeController.items.reversed
+              .map(
+                (currentItem) => Card(
+                  color: Colors.white,
+                  shadowColor: Colors.transparent,
+                  margin: const EdgeInsets.all(10),
+                  elevation: 3,
+                  child: tilesContent(context, currentItem),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  tilesContent(context, currentItem) {
+    return ListTile(
+      title: Text(currentItem.nameItem),
+      subtitle: Text("${currentItem.status}"),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Edit button
+          IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                var id = currentItem.id;
+                _editForm(
+                    context, id, currentItem.nameItem, currentItem.status);
+              }),
+          // Delete button
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              var id = currentItem.id;
+              _homeController.deleteItem(id);
+            },
+          ),
+        ],
       ),
     );
   }

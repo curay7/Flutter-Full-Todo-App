@@ -5,6 +5,9 @@ import 'package:lonetodo/app/modules/home/models/item_model.dart';
 
 final _shoppingBox = Hive.box('todos');
 
+final ScrollController twoScrollController = ScrollController();
+var closeTopContainer = false.obs;
+
 class HomeController extends GetxController {
   // Implement HomeController
 
@@ -15,6 +18,13 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    twoScrollController.addListener(() {
+      double value = twoScrollController.offset / 119;
+      closeTopContainer.value = twoScrollController.offset > 50;
+      // print(twoScrollController);
+      //(twoScrollController.offset > 25) ? closeTopContainer.toggle() : null;
+    });
     refreshItems(); // Load data when app starts
   }
 
@@ -36,14 +46,13 @@ class HomeController extends GetxController {
    * 
    */
   refreshItems() async {
-    print("fire RefreshItems");
     var data = _shoppingBox.keys.map((key) {
       final value = _shoppingBox.get(key);
-      return {"key": key, "name": value["name"], "quantity": value['quantity']};
+      return {"key": key, "name": value["name"], "status": value['status']};
     }).toList();
     for (var item in data) {
       TodoModel initailData = TodoModel(
-          nameItem: item["name"], status: item["quantity"], id: item["key"]);
+          nameItem: item["name"], status: item["status"], id: item["key"]);
       items.add(initailData);
     }
   }
@@ -58,16 +67,15 @@ class HomeController extends GetxController {
   void createItem(newItem) async {
     var addToHive = {
       "name": newItem["name"],
-      "quantity": newItem["quantity"],
+      "status": newItem["status"],
       "isDone": true
     };
     var newId = await _shoppingBox.add(addToHive);
 
     TodoModel addedItem = TodoModel(
-        id: newId, nameItem: newItem["name"], status: newItem["quantity"]);
+        id: newId, nameItem: newItem["name"], status: newItem["status"]);
 
     items.add(addedItem);
-    print(newId);
   }
 
   // ignore: slash_for_doc_comments
@@ -91,7 +99,7 @@ class HomeController extends GetxController {
     items[items.indexWhere((todo) => todo.id == itemKey)] = updateItem;
     var putToHiveUpdate = {
       'name': updateItem.nameItem,
-      'quantity': updateItem.status
+      'status': updateItem.status
     };
     await _shoppingBox.put(itemKey, putToHiveUpdate);
   }
