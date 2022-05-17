@@ -14,6 +14,7 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
+    double oneContainerHeight = size.height * 0.50;
     double twoContainerHeight = size.height * 0.50;
     return SafeArea(
       child: Scaffold(
@@ -26,59 +27,54 @@ class HomeView extends GetView<HomeController> {
               )
             : Column(
                 children: [
-                  Obx(
-                    () => AnimatedOpacity(
-                      duration: const Duration(milliseconds: 200),
-                      opacity: closeTopContainer.value ? 0 : 1,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: size.width,
-                        alignment: Alignment.topCenter,
-                        height:
-                            closeTopContainer.value ? 0 : twoContainerHeight,
-                        child: ListView(
-                          children: _homeController.items.reversed
-                              .map(
-                                (currentItem) => Card(
-                                  color: Colors.transparent,
-                                  margin: const EdgeInsets.all(10),
-                                  elevation: 0,
-                                  child: ListTile(
-                                    title: Text(currentItem.nameItem),
-                                    subtitle: Text("${currentItem.status}"),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Edit button
-                                        IconButton(
-                                            icon: const Icon(Icons.edit),
-                                            onPressed: () {
-                                              var id = currentItem.id;
-                                              _editForm(
-                                                  context,
-                                                  id,
-                                                  currentItem.nameItem,
-                                                  currentItem.status);
-                                            }),
-                                        // Delete button
-                                        IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () {
-                                            var id = currentItem.id;
-                                            _homeController.deleteItem(id);
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  customCard(context)
+                  Obx(() {
+                    if (!closeBottomContainer.value &&
+                        closeTopContainer.value) {
+                      return Row(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.all(10),
+                            child: Text("Tomorrow",
+                                style: TextStyle(
+                                    fontSize: 34, fontWeight: FontWeight.bold)),
+                          ),
+                          Spacer()
+                        ],
+                      );
+                    } else {
+                      return Row(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.all(10),
+                            child: Text("Today",
+                                style: TextStyle(
+                                    fontSize: 34, fontWeight: FontWeight.bold)),
+                          ),
+                          Spacer()
+                        ],
+                      );
+                    }
+                  }),
+                  customCardOne(context, size, twoContainerHeight),
+                  Obx(() {
+                    if (!closeBottomContainer.value &&
+                        !closeTopContainer.value) {
+                      return Row(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.all(10),
+                            child: Text("Tomorrow",
+                                style: TextStyle(
+                                    fontSize: 34, fontWeight: FontWeight.bold)),
+                          ),
+                          Spacer()
+                        ],
+                      );
+                    } else {
+                      return Text("");
+                    }
+                  }),
+                  customCardTwo(context, size, oneContainerHeight),
                 ],
               ),
         floatingActionButton: FloatingActionButton(
@@ -196,19 +192,36 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  customCard(context) {
-    return Expanded(
-      child: Obx(
-        () => ListView(
-          controller: twoScrollController,
+  customCardOne(context, size, twoContainerHeight) {
+    return Obx(() {
+      if (closeTopContainer.value) {
+        return customCardOneContent(context, size, twoContainerHeight);
+      } else {
+        return Expanded(
+            flex: 2,
+            child: customCardOneContent(context, size, twoContainerHeight));
+      }
+    });
+  }
+
+  customCardOneContent(context, size, twoContainerHeight) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 200),
+      opacity: closeTopContainer.value ? 0 : 1,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: size.width,
+        alignment: Alignment.topCenter,
+        height: closeTopContainer.value ? 0 : twoContainerHeight,
+        child: ListView(
+          controller: oneScrollController,
           children: _homeController.items.reversed
               .map(
                 (currentItem) => Card(
-                  color: Colors.white,
-                  shadowColor: Colors.transparent,
+                  color: Colors.transparent,
                   margin: const EdgeInsets.all(10),
-                  elevation: 3,
-                  child: tilesContent(context, currentItem),
+                  elevation: 0,
+                  child: tilesContentOne(context, currentItem),
                 ),
               )
               .toList(),
@@ -217,7 +230,75 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  tilesContent(context, currentItem) {
+  tilesContentOne(context, currentItem) {
+    return ListTile(
+      title: Text(currentItem.nameItem),
+      subtitle: Text("${currentItem.status}"),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Edit button
+          IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                var id = currentItem.id;
+                _editForm(
+                    context, id, currentItem.nameItem, currentItem.status);
+              }),
+          // Delete button
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              var id = currentItem.id;
+              _homeController.deleteItem(id);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+  customCardTwo(context, size, oneContainerHeight) {
+    return Obx(() {
+      if (closeBottomContainer.value) {
+        return customCardTwoContent(context, size, oneContainerHeight);
+      } else {
+        return Expanded(
+            flex: 1,
+            child: customCardTwoContent(context, size, oneContainerHeight));
+      }
+    });
+  }
+
+  customCardTwoContent(context, size, oneContainerHeight) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 200),
+      opacity: closeBottomContainer.value ? 0 : 1,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: size.width,
+        alignment: Alignment.topCenter,
+        height: closeBottomContainer.value ? 0 : oneContainerHeight,
+        child: ListView(
+          controller: twoScrollController,
+          children: _homeController.items.reversed
+              .map(
+                (currentItem) => Card(
+                  color: Colors.white,
+                  shadowColor: Colors.transparent,
+                  margin: const EdgeInsets.all(10),
+                  elevation: 3,
+                  child: tilesContentTwo(context, currentItem),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  tilesContentTwo(context, currentItem) {
     return ListTile(
       title: Text(currentItem.nameItem),
       subtitle: Text("${currentItem.status}"),

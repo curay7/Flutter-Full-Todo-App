@@ -5,6 +5,10 @@ import 'package:lonetodo/app/modules/home/models/item_model.dart';
 
 final _shoppingBox = Hive.box('todos');
 
+//This line is for container one and container two that output data from todo,
+final ScrollController oneScrollController = ScrollController();
+var closeBottomContainer = false.obs;
+
 final ScrollController twoScrollController = ScrollController();
 var closeTopContainer = false.obs;
 
@@ -19,10 +23,16 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
 
+    oneScrollController.addListener(() {
+      double value = oneScrollController.offset / 119;
+      closeBottomContainer.value = oneScrollController.offset > 50;
+      print(closeBottomContainer);
+    });
+
     twoScrollController.addListener(() {
       double value = twoScrollController.offset / 119;
       closeTopContainer.value = twoScrollController.offset > 50;
-      // print(twoScrollController);
+      //print(twoScrollController);
       //(twoScrollController.offset > 25) ? closeTopContainer.toggle() : null;
     });
     refreshItems(); // Load data when app starts
