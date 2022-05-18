@@ -13,6 +13,10 @@ final ScrollController twoScrollController = ScrollController();
 var closeTopContainer = false.obs;
 
 class HomeController extends GetxController {
+//Time Picker
+  var selectedTime = TimeOfDay.now().obs;
+  var selectedDate = DateTime.now().obs;
+
   // Implement HomeController
 
   final count = 0.obs;
@@ -26,7 +30,6 @@ class HomeController extends GetxController {
     oneScrollController.addListener(() {
       double value = oneScrollController.offset / 119;
       closeBottomContainer.value = oneScrollController.offset > 50;
-      print(closeBottomContainer);
     });
 
     twoScrollController.addListener(() {
@@ -139,5 +142,55 @@ class HomeController extends GetxController {
       isDismissible: true,
       forwardAnimationCurve: Curves.easeOutBack,
     );
+  }
+
+  //Time Picker
+  chooseDate() async {
+    DateTime? pickedDate = await showDatePicker(
+        context: Get.context!,
+        initialDate: selectedDate.value,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2024),
+        //initialEntryMode: DatePickerEntryMode.input,
+        // initialDatePickerMode: DatePickerMode.year,
+        helpText: 'Select DOB',
+        cancelText: 'Close',
+        confirmText: 'Confirm',
+        errorFormatText: 'Enter valid date',
+        errorInvalidText: 'Enter valid date range',
+        fieldLabelText: 'DOB',
+        fieldHintText: 'Month/Date/Year',
+        selectableDayPredicate: disableDate);
+    if (pickedDate != null && pickedDate != selectedDate.value) {
+      selectedDate.value = pickedDate;
+    }
+  }
+
+  bool disableDate(DateTime day) {
+    if ((day.isAfter(DateTime.now().subtract(Duration(days: 1))) &&
+        day.isBefore(DateTime.now().add(Duration(days: 5))))) {
+      return true;
+    }
+    return false;
+  }
+
+  //Time
+  chooseTime() async {
+    TimeOfDay? pickedTime = await showTimePicker(
+        context: Get.context!,
+        initialTime: selectedTime.value,
+        builder: (context, child) {
+          return Theme(data: ThemeData.dark(), child: child!);
+        },
+        initialEntryMode: TimePickerEntryMode.input,
+        helpText: 'Select Departure Time',
+        cancelText: 'Close',
+        confirmText: 'Confirm',
+        errorInvalidText: 'Provide valid time',
+        hourLabelText: 'Select Hour',
+        minuteLabelText: 'Select Minute');
+    if (pickedTime != null && pickedTime != selectedTime.value) {
+      selectedTime.value = pickedTime;
+    }
   }
 }
