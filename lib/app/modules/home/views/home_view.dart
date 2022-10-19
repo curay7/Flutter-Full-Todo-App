@@ -97,7 +97,9 @@ class HomeView extends GetView<HomeController> {
                       );
                     }
                   }),
-                  customCardOne(context, size, twoContainerHeight),
+                  Obx(() {
+                    return customCardOne(context, size, twoContainerHeight);
+                  }),
                   Obx(() {
                     if (!closeBottomContainer.value &&
                         !closeTopContainer.value) {
@@ -191,7 +193,9 @@ class HomeView extends GetView<HomeController> {
                     TodoModel(
                         id: id,
                         nameItem: _nameUpdateController.text,
-                        status: statusController.value));
+                        status: statusController.value,
+                        date: _homeController.selectedDate.value.toString(),
+                        time: _homeController.selectedTime.value.toString()));
                 _nameUpdateController.text = '';
               },
               child: const Text('update'),
@@ -386,6 +390,8 @@ class HomeView extends GetView<HomeController> {
                     onPressed: () async {
                       _homeController.createItem({
                         "name": _nameCreateController.text,
+                        "time": _homeController.selectedTime.value,
+                        "date": _homeController.selectedDate.value,
                         "status": false
                       });
                       _nameCreateController.text = "";
@@ -414,15 +420,13 @@ class HomeView extends GetView<HomeController> {
   }
 
   customCardOne(context, size, twoContainerHeight) {
-    return Obx(() {
-      if (closeTopContainer.value) {
-        return customCardOneContent(context, size, twoContainerHeight);
-      } else {
-        return Expanded(
-            flex: 2,
-            child: customCardOneContent(context, size, twoContainerHeight));
-      }
-    });
+    if (closeTopContainer.value) {
+      return customCardOneContent(context, size, twoContainerHeight);
+    } else {
+      return Expanded(
+          flex: 2,
+          child: customCardOneContent(context, size, twoContainerHeight));
+    }
   }
 
   customCardOneContent(context, size, twoContainerHeight) {

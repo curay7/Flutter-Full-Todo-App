@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:lonetodo/app/modules/home/models/item_model.dart';
+import 'package:lonetodo/app/data/item_model.dart';
 
 final _shoppingBox = Hive.box('todos');
 
@@ -16,6 +17,8 @@ class HomeController extends GetxController {
 //Time Picker
   var selectedTime = TimeOfDay.now().obs;
   var selectedDate = DateTime.now().obs;
+  DateFormat dateFormat = DateFormat("dd-MM-yyyy");
+  //DateFormat("dd-MM-yyyy")
 
   // Implement HomeController
 
@@ -61,11 +64,21 @@ class HomeController extends GetxController {
   refreshItems() async {
     var data = _shoppingBox.keys.map((key) {
       final value = _shoppingBox.get(key);
-      return {"key": key, "name": value["name"], "status": value['status']};
+      return {
+        "key": key,
+        "name": value["name"],
+        "status": value['status'],
+        "time": value["time"],
+        "date": value["date"]
+      };
     }).toList();
     for (var item in data) {
       TodoModel initailData = TodoModel(
-          nameItem: item["name"], status: item["status"], id: item["key"]);
+          nameItem: item["name"],
+          status: item["status"],
+          id: item["key"],
+          time: item["time"],
+          date: item["date"]);
       items.add(initailData);
     }
   }
@@ -78,17 +91,27 @@ class HomeController extends GetxController {
    */
 
   void createItem(newItem) async {
+    print(newItem["time"]);
+    print(newItem["date"]);
+    String stringDate = dateFormat.format(newItem["date"]);
+    String stringTime = newItem["time"].toString();
     var addToHive = {
       "name": newItem["name"],
       "status": newItem["status"],
-      "isDone": true
+      "time": stringDate,
+      "date": stringTime,
+      "isDone": true,
     };
     var newId = await _shoppingBox.add(addToHive);
 
-    TodoModel addedItem = TodoModel(
-        id: newId, nameItem: newItem["name"], status: newItem["status"]);
+    // TodoModel addedItem = TodoModel(
+    //     id: newId,
+    //     nameItem: newItem["name"],
+    //     status: newItem["status"],
+    //     time: newItem["time"],
+    //     date: newItem["date"]);
 
-    items.add(addedItem);
+    // items.add(addedItem);
   }
 
   // ignore: slash_for_doc_comments
