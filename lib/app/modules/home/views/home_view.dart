@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:lonetodo/app/modules/home/models/item_model.dart';
+//import 'package:lonetodo/app/modules/home/models/item_model.dart';
 import '../controllers/home_controller.dart';
 
 final HomeController _homeController = Get.put(HomeController());
@@ -34,18 +34,6 @@ class HomeView extends GetView<HomeController> {
                   borderRadius: BorderRadius.circular(100.0),
                 ),
               ),
-              // child: IconButton(
-              //   icon: const Icon(
-              //     Icons.person,
-              //     color: Colors.black,
-              //     size: 70,
-              //   ),
-              //   tooltip: 'Show Snackbar',
-              //   onPressed: () {
-              //     ScaffoldMessenger.of(context).showSnackBar(
-              //         const SnackBar(content: Text('This is a snackbar')));
-              //   },
-              // ),
             )
           ],
         ),
@@ -188,14 +176,14 @@ class HomeView extends GetView<HomeController> {
             ),
             ElevatedButton(
               onPressed: () {
-                _homeController.updateItem(
-                    id,
-                    TodoModel(
-                        id: id,
-                        nameItem: _nameUpdateController.text,
-                        status: statusController.value,
-                        date: _homeController.selectedDate.value.toString(),
-                        time: _homeController.selectedTime.value.toString()));
+                // _homeController.updateItem(
+                //     id,
+                //     TodoModel(
+                //         id: id,
+                //         nameItem: _nameUpdateController.text,
+                //         status: statusController.value,
+                //         date: _homeController.selectedDate.value.toString(),
+                //         time: _homeController.selectedTime.value.toString()));
                 _nameUpdateController.text = '';
               },
               child: const Text('update'),
@@ -432,12 +420,12 @@ class HomeView extends GetView<HomeController> {
   customCardOneContent(context, size, twoContainerHeight) {
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 200),
-      opacity: closeTopContainer.value ? 0 : 1,
+      opacity: 1,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: size.width,
         alignment: Alignment.topCenter,
-        height: closeTopContainer.value ? 0 : twoContainerHeight,
+        height: 0,
         child: ListView(
           controller: oneScrollController,
           children: _homeController.items.reversed
@@ -456,18 +444,6 @@ class HomeView extends GetView<HomeController> {
   }
 
   tilesContentOne(context, currentItem) {
-    Color getColor(Set<MaterialState> states) {
-      const Set<MaterialState> interactiveStates = <MaterialState>{
-        MaterialState.pressed,
-        MaterialState.hovered,
-        MaterialState.focused,
-      };
-      if (states.any(interactiveStates.contains)) {
-        return Colors.blue;
-      }
-      return Colors.grey;
-    }
-
     return Row(
       children: [
         SizedBox(
@@ -480,7 +456,6 @@ class HomeView extends GetView<HomeController> {
               checkColor: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(6.0))),
-              fillColor: MaterialStateProperty.resolveWith(getColor),
               value: false,
               onChanged: (bool? value) {},
             ),
@@ -565,12 +540,12 @@ class HomeView extends GetView<HomeController> {
   customCardTwoContent(context, size, oneContainerHeight) {
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 200),
-      opacity: closeBottomContainer.value ? 0 : 1,
+      opacity: 1,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: size.width,
         alignment: Alignment.topCenter,
-        height: closeBottomContainer.value ? 0 : oneContainerHeight,
+        height: 0,
         child: ListView(
           controller: twoScrollController,
           children: _homeController.items.reversed
@@ -619,7 +594,7 @@ class HomeView extends GetView<HomeController> {
                   alignment: Alignment.centerLeft,
                   child: Container(
                     child: Text(
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+                      "Bottom Lorem ipsum dolor sit amet, consectetur adipiscing elit",
                       style: TextStyle(fontSize: 15, fontFamily: "theFonts"),
                     ),
                   ),
