@@ -17,7 +17,7 @@ class HomeController extends GetxController {
 //Time Picker
   var selectedTime = TimeOfDay.now().obs;
   var selectedDate = DateTime.now().obs;
-  DateFormat dateFormat = DateFormat("dd-MM-yyyy");
+  DateFormat dateFormat = DateFormat();
   //DateFormat("dd-MM-yyyy")
 
   // Implement HomeController
@@ -91,19 +91,23 @@ class HomeController extends GetxController {
    */
 
   void createItem(newItem) async {
-    print(newItem["time"]);
-    print(newItem["date"]);
     String stringDate = dateFormat.format(newItem["date"]);
     String stringTime = newItem["time"].toString();
     var addToHive = {
       "name": newItem["name"],
       "status": newItem["status"],
-      "time": stringDate,
-      "date": stringTime,
+      "time": stringTime,
+      "date": stringDate,
       "isDone": true,
     };
     var newId = await _shoppingBox.add(addToHive);
-
+    TodoModel addedInitailData = TodoModel(
+        nameItem: newItem["name"],
+        status: newItem["status"],
+        id: newId,
+        time: stringTime,
+        date: stringDate);
+    items.add(addedInitailData);
     // TodoModel addedItem = TodoModel(
     //     id: newId,
     //     nameItem: newItem["name"],
